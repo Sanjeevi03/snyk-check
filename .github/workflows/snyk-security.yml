@@ -8,36 +8,47 @@ on:
 jobs:
   snyk:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
 
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # FRONTEND (Node)
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      - name: Install frontend deps
-        run: |
-          cd frontend
-          npm install
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
 
-      - name: Install backend deps
+      - name: Run Snyk on Frontend
+        uses: snyk/actions/node@master
+        with:
+          command: test
+          args: --severity-threshold=high
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        working-directory: frontend
+
+      # BACKEND (Python)
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      - name: Install backend dependencies
+        working-directory: backend
         run: |
-          cd backend
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Snyk
-        uses: snyk/actions/setup@master
-
-      - name: Authenticate Snyk
-        run: snyk auth ${{ secrets.SNYK_TOKEN }}
-
-      - name: Test Frontend
-        run: |
-          cd frontend
-          snyk test
-      
-      - name: Test Backend
-        run: |
-          cd backend
-          snyk test --file=requirements.txt
+      - name: Run Snyk on Backend
+        uses: snyk/actions/python@master
+        with:
+          command: test
+          args: --file=requirements.txt --severity-threshold=high
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        working-directory: backend
