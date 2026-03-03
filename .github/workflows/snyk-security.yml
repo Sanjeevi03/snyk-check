@@ -36,4 +36,8 @@ jobs:
         run: |
           cd frontend
           snyk test
-
+      
+      - name: Test Backend
+        run: |
+          cd backend
+          snyk test --file=requirements.txt
