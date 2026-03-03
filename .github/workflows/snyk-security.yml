@@ -13,7 +13,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # FRONTEND (Node)
+      # FRONTEND
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -27,12 +27,11 @@ jobs:
         uses: snyk/actions/node@master
         with:
           command: test
-          args: --severity-threshold=high
+          args: --file=frontend/package-lock.json --severity-threshold=high
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        working-directory: frontend
 
-      # BACKEND (Python)
+      # BACKEND
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -48,7 +47,6 @@ jobs:
         uses: snyk/actions/python@master
         with:
           command: test
-          args: --file=requirements.txt --severity-threshold=high
+          args: --file=backend/requirements.txt --severity-threshold=high
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        working-directory: backend
